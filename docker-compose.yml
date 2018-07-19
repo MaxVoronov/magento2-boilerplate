@@ -1,0 +1,50 @@
+version: "3"
+services:
+  nginx:
+    container_name: ${CONTAINER_PREFIX}nginx
+    image: ${IMAGE_PREFIX}/mage2-nginx
+    build:
+      context: ${DOCKER_DIR}/nginx
+    stdin_open: true
+    tty: true
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - phpfpm
+    links:
+      - phpfpm
+    volumes:
+      - ${SOURCE_DIR}/:/var/www
+    env_file:
+      - .env
+
+  phpfpm:
+    container_name: ${CONTAINER_PREFIX}phpfpm
+    image: ${IMAGE_PREFIX}/mage2-phpfpm
+    build:
+      context: ${DOCKER_DIR}/phpfpm
+    stdin_open: true
+    tty: true
+    ports:
+      - 9000:9000
+    depends_on:
+      - database
+    links:
+      - database
+    volumes:
+      - ${SOURCE_DIR}/:/var/www
+    env_file:
+      - .env
+
+  database:
+    container_name: ${CONTAINER_PREFIX}database
+    image: mariadb:10.3
+    stdin_open: true
+    tty: true
+    ports:
+      - 3306:3306
+    volumes:
+      - ${SHARED_DIR}/db/:/var/lib/mysql
+    env_file:
+      - .env
